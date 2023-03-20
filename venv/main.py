@@ -92,6 +92,3 @@ else:
             body = f"Temperature exceeded {ALARM_THRESHOLD}°C!"
             message.attach(MIMEText(body, 'plain'))
             context = ssl.create_default_context()
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-                server.login("atabdellatif1@gmail.com", "1965729698As")
-                server.sendmail("taha196tr@gmail.com", ALARM_RECIPIENT, message.as_string())
