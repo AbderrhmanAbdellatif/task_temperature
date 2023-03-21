@@ -1,8 +1,6 @@
 import os
 import base64
 import pandas as pd
-import streamlit as st
-import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from influxdb_client import InfluxDBClient
@@ -13,7 +11,12 @@ import pandas as pd
 import smtplib
 import ssl
 import requests
-
+from email.mime.application import MIMEApplication
+from email.mime.base import MIMEBase
+from email import encoders
+import base64
+import time
+import streamlit as st
 # Set up InfluxDB client
 INFLUXDB_URL = "https://us-east-1-1.aws.cloud2.influxdata.com"  # Replace with your InfluxDB URL
 INFLUXDB_TOKEN = "0rCx4vJj_a9HaBQJSBrwY3nQBR94uQuJlMu_CmqPVAwBOEOBu7lN7s7_FiqfQh0hBHf0Ecvz7H_EayMDSo9GEw=="  # Replace with your InfluxDB token
@@ -22,6 +25,12 @@ INFLUXDB_BUCKET = "Temperature"  # Replace with your InfluxDB bucket
 
 client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN)
 
+
+def create_download_link_csv(df, filename="temperature_data.csv"):
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">Download CSV File</a>'
+    return href
 # User authentication (replace with your desired credentials)
 USER = "admin"
 PASSWORD = "admin"
@@ -36,29 +45,30 @@ st.sidebar.title("Alarm Settings")
 ALARM_THRESHOLD = st.sidebar.number_input("Alarm Threshold (°C)", value=30)
 ALARM_RECIPIENT = st.sidebar.text_input("Email Recipient", value="taha196tr@gmail.com")
 
-# Export report
-def export_report(df):
-    csv = df.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="temperature_report.csv">Download CSV</a>'
-    return href
+
+
+@st.cache_resource
+def get_data():
+    query = f'from(bucket: "{INFLUXDB_BUCKET}") |> range(start: -1h) |> filter(fn: (r) => r["_measurement"] == "temperature_data")'
+    result = client.query_api().query(org=INFLUXDB_ORG, query=query)
+
+    # Convert query result to pandas DataFrame
+    data = []
+    for table in result:
+        for record in table.records:
+            if record["table"]==1:
+                data.append((record["_time"], record["_field"], record["_value"]))
+    df = pd.DataFrame(data, columns=["Time", "Field", "Value"])
+    return df   
 
 if username != USER or password != PASSWORD:
     st.warning("Incorrect credentials. Please try again.")
 else:
     chart_placeholder = st.empty()
     df_placeholder = st.empty()
+    refresh_rate = st.sidebar.slider("Refresh rate (seconds)", 1, 60, 10)
     while True:
-        query = f'from(bucket: "{INFLUXDB_BUCKET}") |> range(start: -1h) |> filter(fn: (r) => r["_measurement"] == "temperature_data")'
-        result = client.query_api().query(org=INFLUXDB_ORG, query=query)
-
-        # Convert query result to pandas DataFrame
-        data = []
-        for table in result:
-            for record in table.records:
-                if record["table"]==1:
-                    data.append((record["_time"], record["_field"], record["_value"]))
-        df = pd.DataFrame(data, columns=["Time", "Field", "Value"])
+        df = get_data()
         
         # Display temperature data as line chart
         # Customize the chart appearance
@@ -73,8 +83,14 @@ else:
             width='container',
             height=300
         )
+        # Add the export button to the sidebar
+        if st.sidebar.button("Download CSV", key="download_csv_button"):
+            download_link = create_download_link_csv(df)
+            st.sidebar.markdown(download_link, unsafe_allow_html=True)
+            st.sidebar.success("CSV file is ready for download!")
 
         chart_placeholder.altair_chart(chart, use_container_width=True)
-        df_placeholder.dataframe(df)
+        time.sleep(refresh_rate)
+        st.experimental_rerun()
 
-        #st.markdown(export_report(df), unsafe_allow_html=True)
+
