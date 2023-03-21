@@ -1,4 +1,3 @@
-
 import os
 import base64
 import pandas as pd
@@ -33,7 +32,6 @@ st.title("Temperature Monitoring Dashboard")
 username = st.sidebar.text_input("Username")
 password = st.sidebar.text_input("Password", type="password")
 
-
 st.sidebar.title("Alarm Settings")
 ALARM_THRESHOLD = st.sidebar.number_input("Alarm Threshold (°C)", value=30)
 ALARM_RECIPIENT = st.sidebar.text_input("Email Recipient", value="taha196tr@gmail.com")
@@ -44,7 +42,6 @@ def export_report(df):
     b64 = base64.b64encode(csv.encode()).decode()
     href = f'<a href="data:file/csv;base64,{b64}" download="temperature_report.csv">Download CSV</a>'
     return href
-
 
 if username != USER or password != PASSWORD:
     st.warning("Incorrect credentials. Please try again.")
@@ -62,6 +59,7 @@ else:
                 if record["table"]==1:
                     data.append((record["_time"], record["_field"], record["_value"]))
         df = pd.DataFrame(data, columns=["Time", "Field", "Value"])
+        
         # Display temperature data as line chart
         # Customize the chart appearance
         line = alt.Chart(df).mark_line(point=True).encode(
@@ -69,7 +67,6 @@ else:
             y=alt.Y('Value:Q', axis=alt.Axis(title='Temperature (°C)')),
             tooltip=[alt.Tooltip('Time:T', title='Time'), alt.Tooltip('Value:Q', title='Temperature (°C)', format='.2f')]
         )
-
         # Set chart properties
         chart = line.properties(
             title='Temperature Monitoring Dashboard',
@@ -79,16 +76,5 @@ else:
 
         chart_placeholder.altair_chart(chart, use_container_width=True)
         df_placeholder.dataframe(df)
-        st.markdown(export_report(df), unsafe_allow_html=True)
 
-        # Check for temperature threshold
-        if df["Value"].iloc[-1] > ALARM_THRESHOLD:
-            st.warning("Temperature exceeded threshold!")
-            # Send email alert
-            message = MIMEMultipart()
-            message['From'] = 'temperature_alert@mycompany.com'
-            message['To'] = ALARM_RECIPIENT
-            message['Subject'] = 'Temperature Alert'
-            body = f"Temperature exceeded {ALARM_THRESHOLD}°C!"
-            message.attach(MIMEText(body, 'plain'))
-            context = ssl.create_default_context()
+        #st.markdown(export_report(df), unsafe_allow_html=True)
