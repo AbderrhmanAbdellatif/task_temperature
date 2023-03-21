@@ -45,6 +45,30 @@ st.sidebar.title("Alarm Settings")
 ALARM_THRESHOLD = st.sidebar.number_input("Alarm Threshold (°C)", value=30)
 ALARM_RECIPIENT = st.sidebar.text_input("Email Recipient", value="taha196tr@gmail.com")
 
+# Add your Telegram bot token and chat ID
+TELEGRAM_BOT_TOKEN = "6299578760:AAGTR2NH2h1pUfolycwUsvNDtPHBM8bePYg"
+TELEGRAM_CHAT_ID = "146697908"
+
+# Add your email credentials
+EMAIL_ADDRESS = "atabdellatifbot@gmail.com"
+EMAIL_PASSWORD = "shlzaqmcgtldcfiq"
+
+# Alarm notification function
+def send_alarm_notification(temperature):
+    # Send email notification
+    msg = MIMEMultipart()
+    msg["From"] = EMAIL_ADDRESS
+    msg["To"] = ALARM_RECIPIENT
+    msg["Subject"] = f"Temperature Alarm: {temperature} °C"
+    msg.attach(MIMEText(f"Temperature has exceeded the threshold of {ALARM_THRESHOLD} °C. Current temperature: {temperature} °C.", "plain"))
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD) 
+        server.sendmail(EMAIL_ADDRESS, ALARM_RECIPIENT, msg.as_string())
+    
+    # Send Telegram notification
+    text = f"Temperature Alarm: {temperature} °C\nTemperature has exceeded the threshold of {ALARM_THRESHOLD} °C."
+    requests.get(f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage?chat_id={TELEGRAM_CHAT_ID}&text={text}")
 
 
 @st.cache_resource
@@ -69,7 +93,10 @@ else:
     refresh_rate = st.sidebar.slider("Refresh rate (seconds)", 1, 60, 10)
     while True:
         df = get_data()
-        
+           # Check if the temperature has exceeded the alarm threshold
+        max_temperature = df["Value"].max()
+        if max_temperature > ALARM_THRESHOLD:
+            send_alarm_notification(max_temperature)
         # Display temperature data as line chart
         # Customize the chart appearance
         line = alt.Chart(df).mark_line(point=True).encode(
