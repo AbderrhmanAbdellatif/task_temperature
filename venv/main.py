@@ -47,7 +47,7 @@ ALARM_RECIPIENT = st.sidebar.text_input("Email Recipient", value="taha196tr@gmai
 
 # Add your Telegram bot token and chat ID
 TELEGRAM_BOT_TOKEN = "6299578760:AAGTR2NH2h1pUfolycwUsvNDtPHBM8bePYg"
-TELEGRAM_CHAT_ID = "146697908"
+TELEGRAM_CHAT_ID = "210166059"
 
 # Add your email credentials
 EMAIL_ADDRESS = "atabdellatifbot@gmail.com"
