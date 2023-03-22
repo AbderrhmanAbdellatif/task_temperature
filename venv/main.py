@@ -56,15 +56,15 @@ EMAIL_PASSWORD = "shlzaqmcgtldcfiq"
 # Alarm notification function
 def send_alarm_notification(temperature):
     # Send email notification
-    msg = MIMEMultipart()
-    msg["From"] = EMAIL_ADDRESS
-    msg["To"] = ALARM_RECIPIENT
-    msg["Subject"] = f"Temperature Alarm: {temperature} °C"
-    msg.attach(MIMEText(f"Temperature has exceeded the threshold of {ALARM_THRESHOLD} °C. Current temperature: {temperature} °C.", "plain"))
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD) 
-        server.sendmail(EMAIL_ADDRESS, ALARM_RECIPIENT, msg.as_string())
+    #msg = MIMEMultipart()
+    #msg["From"] = EMAIL_ADDRESS
+    #msg["To"] = ALARM_RECIPIENT
+    #msg["Subject"] = f"Temperature Alarm: {temperature} °C"
+    #msg.attach(MIMEText(f"Temperature has exceeded the threshold of {ALARM_THRESHOLD} °C. Current temperature: {temperature} °C.", "plain"))
+    #context = ssl.create_default_context()
+    #with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+    #    server.login(EMAIL_ADDRESS, EMAIL_PASSWORD) 
+    #    server.sendmail(EMAIL_ADDRESS, ALARM_RECIPIENT, msg.as_string())
     
     # Send Telegram notification
     text = f"Temperature Alarm: {temperature} °C\nTemperature has exceeded the threshold of {ALARM_THRESHOLD} °C."
