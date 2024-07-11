@@ -47,5 +47,5 @@ tzlocal==4.2
 urllib3==1.26.17
 validators==0.20.0
 watchdog==2.3.1
-zipp==3.15.0
+zipp==3.19.1
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
