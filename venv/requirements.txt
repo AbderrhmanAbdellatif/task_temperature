@@ -32,7 +32,7 @@ python-dateutil==2.8.2
 pytz==2022.7.1
 pytz-deprecation-shim==0.1.0.post0
 reactivex==4.0.4
-requests==2.31.0
+requests==2.32.4
 rich==13.3.2
 semver==2.13.0
 six==1.16.0
